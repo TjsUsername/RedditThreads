@@ -1,0 +1,23 @@
+threads:
+  - title: "Add/Drop - Daily Thread"
+    flair_text: "[Add/Drop]"
+    flair_css: "tradepickupthread"
+    wiki: 'droptrade'
+  - title: "Sit/Start - Daily Thread"
+    flair_text: "[Sit/Start]"
+    flair_css: "startthread"
+    wiki: 'wdis'
+  - title: "Anything Goes - Daily Thread"
+    flair_text: "[Anything Goes]"
+    flair_css: "anything"
+    wiki: 'anything'
+  - title: "Trade Discussion - Daily Thread"
+    flair_text: "[Trade Discussion]"
+    flair_css: "trades"
+    wiki: 'trades'
+index: True
+news_and_discussion: True
+posts_per_day: 1
+subreddit: "fantasyhockey"
+show_percents: True
+wdis_replace: False
