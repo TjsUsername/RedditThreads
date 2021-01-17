@@ -35,6 +35,7 @@ def calculate_leader_index(thread, overall_help_count, number=5):
                 try:
                     help_count_thread[reply.author.name] += 1
                 except Exception as e:
+                    print(e)
                     pass
 
     user_scores_sortable = []
@@ -101,6 +102,7 @@ def create_unanswered_index(thread, help_count_all, length=20, text=True, show_p
             # Append to tuple for free sort
             rows.append((author_replies, author_all_replies, created, author, link))
         except Exception as e:
+            print(e)
             pass
 
     rows.sort()
@@ -121,7 +123,7 @@ def create_unanswered_index(thread, help_count_all, length=20, text=True, show_p
 
 def post_index_thread(index_body):
     # POST INDEX THREAD
-    index_title = f"Fantasy Hockey Megathread - {current_date}"
+    index_title = 'Fantasy Hockey Megathread: [Index] - %s %s, %s' % (current_day, thread_zone, current_date)
     thread_found = False
     current_threads = get_current_threads(subreddit)
     for thread in current_threads:
