@@ -8,9 +8,9 @@ from common import *
 from post_player_discussions import *
 
 bot_name = "FH-GoalieBot"
-bot_pw = "fiverrpherrman109"
-client_id = 'K1-26e2s1qxWJg'
-client_secret = 'eXPINy706R0cMgdVYiPV2m27tWqGRQ'
+bot_pw = "XXXXXXXXXX"
+client_id = 'XXXXXXXXX'
+client_secret = 'XXXXXXXXXXXXX'
 
 def calculate_overall_leader_index(number=10):
     user_scores_sortable = []
