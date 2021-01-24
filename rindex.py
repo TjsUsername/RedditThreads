@@ -5,7 +5,8 @@ from pytz import timezone
 import praw
 import yaml
 from common import *
-from post_player_discussions import *
+from post_player_threads import *
+from get_todays_games import *
 
 bot_name = "FH-GoalieBot"
 bot_pw = "XXXXXXXXXX"
@@ -144,7 +145,7 @@ def post_index_thread(index_body):
         submitted_thread.mod.lock()
 
 
-def     calculate_index_length(index_body, news_link, overall_help_count):
+def calculate_index_length(index_body, news_link, overall_help_count):
     index_length = 0
     index_num = 20
 
@@ -214,6 +215,7 @@ def get_thread_zone(config, hour):
 
     return thread_zone
 
+
 this_date = datetime.datetime.now().astimezone(timezone('US/Central'))
 
 hour = int(this_date.strftime("%H"))
@@ -223,7 +225,7 @@ r = praw.Reddit(client_id=client_id,
                 password=bot_pw,
                 user_agent='FantasyBot',
                 username=bot_name)
-
+r.validate_on_submit = True
 # Not creating a new thread until 6am
 if hour < 6:
     this_date = this_date - datetime.timedelta(days=1)
@@ -235,7 +237,8 @@ current_day = this_date.strftime('%a')
 current_day_full = this_date.strftime('%A').lower()
 hour = int(this_date.strftime("%H"))
 
-config = yaml.load(open("%s.yaml" % sys.argv[1]).read())
+configPath = "%s.yaml" % sys.argv[1]
+config = yaml.load(open(configPath).read(), Loader=yaml.FullLoader)
 thread_zone = get_thread_zone(config, hour)
 print("Posting to Sub: %s" % config['subreddit'])
 subreddit = r.subreddit(config['subreddit'])
@@ -254,33 +257,38 @@ for thread_config in thread_configs:
     thread_found = False
 
     # Get Thread Body
-    wiki = get_wiki(subreddit, thread_config['wiki'])
-    if config['wdis_replace']:
-        if thread_config['wiki'] == 'wdis':
-            position = thread_config['title'].split(' ')[1]
-            wiki = wiki.replace('<REPLACE>', position)
+    if thread_config['wiki']:
+        body = get_wiki(subreddit, thread_config['wiki'])
+    elif thread_config['games']:
+        body = get_todays_games(this_date)
+    
+    if body is not None:
+        if config['wdis_replace']:
+            if thread_config['wiki'] == 'wdis':
+                position = thread_config['title'].split(' ')[1]
+                body = body.replace('<REPLACE>', position)
 
-    thread_title = '[%s] - %s %s, %s' % (thread_config['title'], current_day, thread_zone, current_date)
+        thread_title = '[%s] - %s %s, %s' % (thread_config['title'], current_day, thread_zone, current_date)
 
-    # See if thread already exists.
-    for thread in current_threads:
-        if thread_title == str(thread.title):
-            print('ALREADY SUBMITTED, USING:', thread_title)
-            if thread.num_comments < 2000:
-                thread.comments.replace_more(limit=None)
-            found_threads.append((thread, wiki, thread_config))
-            thread_found = True
-            break
+        # See if thread already exists.
+        for thread in current_threads:
+            if thread_title == str(thread.title):
+                print('ALREADY SUBMITTED, USING:', thread_title)
+                if thread.num_comments < 2000:
+                    thread.comments.replace_more(limit=None)
+                found_threads.append((thread, body, thread_config))
+                thread_found = True
+                break
 
-    if not thread_found:
-        print('SUBMITTING THREAD', thread_title)
-        submitted_thread = subreddit.submit(thread_title, selftext=wiki)
-        submitted_thread.mod.suggested_sort(sort='new')
-        submitted_thread.mod.flair(text=thread_config['flair_text'], css_class=thread_config['flair_css'])
-        if 'sticky' in thread_config and thread_config['sticky']:
-            submitted_thread.mod.sticky(state=True, bottom=True)
+        if not thread_found:
+            print('SUBMITTING THREAD', thread_title)
+            submitted_thread = subreddit.submit(thread_title, selftext=body)
+            submitted_thread.mod.suggested_sort(sort='new')
+            submitted_thread.mod.flair(text=thread_config['flair_text'], css_class=thread_config['flair_css'])
+            if 'sticky' in thread_config and thread_config['sticky']:
+                submitted_thread.mod.sticky(state=True, bottom=True)
 
-        found_threads.append((submitted_thread, wiki, thread_config))
+            found_threads.append((submitted_thread, body, thread_config))
 
 overall_help_count = get_overall_help_count(found_threads)
 

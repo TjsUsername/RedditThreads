@@ -15,6 +15,11 @@ threads:
     flair_text: "[Trade Discussion]"
     flair_css: "trades"
     wiki: 'trades'
+  - title: "Today's Games - Daily Thread"
+    flair_text: "[Games]"
+    flair_css: "games"
+    wiki: False
+    games: True
 index: True
 news_and_discussion: True
 posts_per_day: 1
